@@ -1,0 +1,41 @@
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# ── Virtual environments ──────────────────────────────────
+venv/
+.venv/
+env/
+
+# ── Model weights (never commit — too large) ──────────────
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.gguf
+finetune_outputs/
+models/
+
+# ── Dataset images (large — download via script) ──────────
+formatted_data/*/images/
+formatted_data/all_datasets.jsonl
+eval_datasets/
+
+# ── Results & checkpoints ────────────────────────────────
+eval_results/
+logs/*.log
+logs/pipeline_state.json
+download_format_checkpoint.json
+
+# ── HuggingFace cache ─────────────────────────────────────
+.cache/
+
+# ── Secrets / config ──────────────────────────────────────
+.env
+*.key

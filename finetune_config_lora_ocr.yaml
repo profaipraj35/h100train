@@ -1,0 +1,73 @@
+# ============================================================
+#  QLoRA Fine-tuning — OCR Expert Adapter (H100)
+# ============================================================
+#  Uses ALL IAM (6482) + SROIE (626) data = ~7108 samples.
+#  H100 optimised: larger batch, 4 dataloader workers.
+#
+#  Usage:
+#    python finetune_qlora.py --config finetune_config_lora_ocr.yaml
+# ============================================================
+
+active_model: qwen25vl_3b
+
+models:
+  qwen25vl_3b:
+    hf_id: Qwen/Qwen2.5-VL-3B-Instruct
+    arch: qwen_vl
+    category: generalist
+    size: 3B
+    trust_remote_code: true
+
+qlora:
+  rank: 32
+  alpha: 64
+  dropout: 0.05
+  bias: none
+  target_modules: auto
+  quantization_bits: 4
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_use_double_quant: true
+  bnb_4bit_compute_dtype: bfloat16
+
+training:
+  batch_size: 8                        # H100 80GB
+  gradient_accumulation_steps: 2       # effective batch = 16
+  num_epochs: 5
+  learning_rate: 1.5e-4
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  max_seq_length: 256                  # OCR outputs are short
+  optimizer: adamw_8bit
+  use_gradient_checkpointing: true
+  fp16: false
+  bf16: true
+
+checkpointing:
+  save_steps: 100
+  save_total_limit: 5
+  resume_from_checkpoint: true         # auto-resume if interrupted
+
+evaluation:
+  eval_strategy: steps
+  eval_steps: 100
+  max_eval_samples: 500
+
+data:
+  data_dir: formatted_data
+  datasets:
+    - iam
+    - sroie
+  max_train_samples: null              # use ALL ~7108 samples
+  val_split_ratio: 0.1
+
+output:
+  output_dir: finetune_outputs/lora_ocr
+  logging_steps: 20
+  report_to: tensorboard
+
+hardware:
+  seed: 42
+  dataloader_num_workers: 4
+  ram_monitor_interval: 30
